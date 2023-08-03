@@ -6,8 +6,6 @@ const { isAdminRole } = require('../middlewares/validate.role.js');
 // 5. se importA validador de rol desde helpers
 //10.  se importa validador de emailExiste
 const { isValidRole, emailExiste, userExistsById } = require('../helpers/db.validators.js');
-
-
 const { getUsers, 
         postUsers, 
         deleteUsers, 

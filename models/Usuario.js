@@ -31,7 +31,12 @@ const UsuarioSchema = Schema({
     googleSignIn :{
         type:Boolean,
         default: true
+    },
+    categorias: {
+        type: Schema.Types.ObjectId,
+        ref: 'categorias',
+        required: true
     }
 });
 
-module.exports = model('Usuario', UsuarioSchema);
+module.exports = model('usuarios', UsuarioSchema);
