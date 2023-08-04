@@ -1,42 +1,59 @@
-const {Router} = require('express');
-const {check} = require('express-validator');
-const { validateDocuments } = require('../middlewares/validate.documents.js');
+const { Router } = require('express');
+const { check } = require('express-validator');
+
+
+const { validateDocuments} = require('../middlewares/validate.documents.js');
 const { validateJWT } = require('../middlewares/validate.jwt.js');
 const { isAdminRole } = require('../middlewares/validate.role.js');
-const { isValidRole, userExistsById } = require('../helpers/db.validators.js');
-const {getCheese,
-       postCheese,
-       deleteCheese,
-       putCheese,
-       patchCheese
 
-} = require('../controllers/Cheese.controller.js')
+const { 
+        getCheeses, getCheese, postCheese, putCheese, deleteCheese
+        } = require('../controllers/cheese.controllers.js');
+
+const { findCategoryById, findCheeseById } = require('../helpers/db.validators.js');
+
 
 const router = Router();
 
-router.get("/",getCheese)
+/**
+ * {{url}}/api/categorias
+ */
 
-router.post('/', [ 
-    validateJWT, 
-     check('nombre','El nombre es obligatorio').not().isEmpty(),
-     validateDocuments
- ], postCheese );
+//  Obtener todas las categorias - publico
+router.get('/', getCheeses );
 
- router.delete("/:id",[
+// Obtener una categoria por id - publico
+ router.get('/:id',[
+    check('id', 'No es un id de Mongo válido').isMongoId(),
+    check('id').custom( findCheeseById ),
+    validateDocuments,
+], getCheese ); 
+
+// Crear categoria - privado - cualquier persona con un token válido
+ router.post('/', [ 
+    validateJWT,
+    check('name','El nombre es obligatorio').not().isEmpty(),
+    check('categoria','No es un id de Mongo').isMongoId(),
+    check('categoria').custom( findCategoryById ),
+    validateDocuments
+], postCheese ); 
+
+// Actualizar - privado - cualquiera con token válido
+ router.put('/:id',[
+    validateJWT,
+    // check('categoria','No es un id de Mongo').isMongoId(),
+    check('id').custom( findCheeseById ),
+    validateDocuments
+], putCheese ); 
+
+// Borrar una categoria - Admin
+ router.delete('/:id',[
     validateJWT,
     isAdminRole,
-    check('id','No es un ID valid').isMongoId(),
-    check('id').custom(userExistsById),
-    validateDocuments
-],deleteCheese)
-
-
-router.put("/:id",[
-    check('id','Noes un ObjectID MongoDB valido').isMongoId(),
-    check('id').custom(userExistsById),
-    check('rol').custom(isValidRole),
-    validateDocuments
-],putCheese)
+    check('id', 'No es un id de Mongo válido').isMongoId(),
+    check('id').custom( findCheeseById ),
+    validateDocuments,
+], deleteCheese); 
 
 
 module.exports = router;
